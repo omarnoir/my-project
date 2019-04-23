@@ -1,0 +1,63 @@
+version: '2'
+services:
+
+  mongo:
+    image: mongo
+    hostname: mongo
+    container_name: "mongo"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGO_INITDB_DATABASE=strapi
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - 27017:27017
+    command: mongod --smallfiles --logpath=/dev/null  --quiet
+
+  strapi:
+    image: strapi/strapi
+    container_name: "strapi"
+    environment:
+      - DATABASE_CLIENT=mongo
+      - DATABASE_HOST=mongo
+      - DATABASE_PORT=27017
+      - DATABASE_NAME=strapi
+      - DATABASE_USERNAME=
+      - DATABASE_PASSWORD=
+      - DATABASE_SSL=false
+      - DATABASE_AUTHENTICATION_DATABASE=strapi
+      - HOST=localhost
+    volumes:
+      - ./strapi:/usr/src/api/strapi-app
+    ports:
+      - 1337:1337
+    depends_on:
+      - mongo
+  
+  # webapp:
+  #   image: bayesimpact/react-base
+  #   container_name: "webapp"
+  #   ports:
+  #     - 8080:80
+  #     - 3000:3000
+  #   volumes:
+  #     - ./webapp:/app
+  #   depends_on:
+  #     - strapi
+
+  mongo-express:
+    hostname: mongo-express
+    container_name: "mongo-express"
+    image: mongo-express
+    links:
+        - mongo:mongo
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    command: sh -c 'sleep 10 && tini -- node app'
+
+    
+
+    
